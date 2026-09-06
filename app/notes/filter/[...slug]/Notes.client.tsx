@@ -7,6 +7,7 @@ import { fetchNotes } from '@/lib/api';
 import { PER_PAGE } from '@/lib/constants';
 import NoteList from '@/components/NoteList/NoteList';
 import Pagination from '@/components/Pagination/Pagination';
+import SearchBox from '@/components/SearchBox/SearchBox';
 import css from './NotesPage.module.css';
 
 interface NotesProps {
@@ -15,15 +16,21 @@ interface NotesProps {
 
 export default function Notes({ tag }: NotesProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { data, isLoading, isError, isSuccess } = useQuery({
-    queryKey: ['notes', tag, currentPage],
-    queryFn: () => fetchNotes({ page: currentPage, perPage: PER_PAGE, tag }),
+    queryKey: ['notes', tag, currentPage, searchTerm],
+    queryFn: () => fetchNotes({ page: currentPage, perPage: PER_PAGE, tag, search: searchTerm }),
     placeholderData: keepPreviousData,
   });
 
   const notes = data?.notes ?? [];
   const totalPages = data?.totalPages ?? 0;
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
 
   return (
     <div className={css.app}>
@@ -36,6 +43,7 @@ export default function Notes({ tag }: NotesProps) {
             onPageChange={setCurrentPage}
           />
         )}
+        <SearchBox value={searchTerm} onChange={handleSearchChange} />
         <Link href="/notes/action/create" className={css.button}>
           Create note +
         </Link>
